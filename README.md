@@ -25,10 +25,10 @@
 ---
 
 ```bash
-cp migrate-claude.md ~/.claude/commands/
+mkdir -p ~/.claude/commands && curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/migrate-claude.md -o ~/.claude/commands/migrate-claude.md
 ```
 
-Then type `/migrate-claude` in Claude Code.
+Then type `/migrate-claude` in Claude Code. Install the [full toolkit](#option-a-one-command-install-recommended) for backup, restore, verify, and diagnostics.
 
 ---
 
@@ -75,14 +75,11 @@ The app registry is what drives the sidebar. If it still points to old paths, th
 
 ## Quick Start
 
-### Option A: Slash command (recommended)
+### Option A: One command install (recommended)
 
 ```bash
-# Install just the migration skill
-cp migrate-claude.md ~/.claude/commands/
-
-# Or install the full toolkit
-cp migrate-claude.md verify-migration.md backup-claude.md restore-claude.md diagnose-claude.md ~/.claude/commands/
+# Install everything — all 5 slash commands
+mkdir -p ~/.claude/commands && for f in migrate-claude verify-migration backup-claude restore-claude diagnose-claude; do curl -sL "https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/$f.md" -o "$HOME/.claude/commands/$f.md"; done
 ```
 
 Then in Claude Code:
@@ -92,6 +89,33 @@ Then in Claude Code:
 ```
 
 Claude walks you through 5 phases: pre-flight check → backup → migration → verification → cleanup. It confirms before each destructive step.
+
+<details>
+<summary><strong>Install individual commands</strong></summary>
+<br />
+
+Pick only what you need:
+
+```bash
+mkdir -p ~/.claude/commands
+
+# Migration (move a project to a new directory)
+curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/migrate-claude.md -o ~/.claude/commands/migrate-claude.md
+
+# Verification (health check across all 3 locations)
+curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/verify-migration.md -o ~/.claude/commands/verify-migration.md
+
+# Backup (snapshot all Claude Code state)
+curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/backup-claude.md -o ~/.claude/commands/backup-claude.md
+
+# Restore (roll back from a snapshot)
+curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/restore-claude.md -o ~/.claude/commands/restore-claude.md
+
+# Diagnostics (find orphans, duplicates, secrets, bloat)
+curl -sL https://raw.githubusercontent.com/Anthropicary/migrate-claude-code/main/diagnose-claude.md -o ~/.claude/commands/diagnose-claude.md
+```
+
+</details>
 
 ### Option B: Bash script
 
