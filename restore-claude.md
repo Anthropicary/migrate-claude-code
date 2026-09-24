@@ -35,8 +35,11 @@ If the backup's `home_dir` (from manifest) differs from the current `$HOME`:
 3. Confirm before proceeding
 4. Apply remapping to:
    - Project path keys in `claude.json`
-   - Path-encoded directory names in `projects/`
-   - `cwd` and `originCwd` fields in all `local_*.json` files in `app-registry/`
+   - Path-encoded directory names in `projects/` — re-encode from the remapped path; every non-alphanumeric character becomes `-` (not just `/`), so don't do a text replace on dir names
+   - `cwd`, `originCwd`, `worktreePath` and `planPath` in all `local_*.json` files in `app-registry/`
+   - `path` and `baseRepo` in `git-worktrees.json`, plus the path keys under `untrackedDirGc`
+
+   Match a path if it equals the old prefix or starts with the old prefix + `/`.
 
 ### Step 4: Detect Platform
 
@@ -71,6 +74,15 @@ Confirm with the user before each step:
    cp -r <backup>/app-registry/* "<app-registry-path>/"
    ```
    This merges with existing registry entries.
+
+4. **App worktree registry** (if in the backup):
+   ```bash
+   cp <backup>/git-worktrees.json "<app-data-dir>/git-worktrees.json"
+   ```
+
+Quit the Claude desktop app before restoring — it may overwrite restored files from memory when it quits.
+
+For undoing a single project move made with `migrate-claude.sh`, use `migrate-claude.sh --restore <backup-dir>` instead.
 
 ### Step 7: Verify
 

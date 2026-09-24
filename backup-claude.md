@@ -16,7 +16,7 @@ Create a timestamped backup directory:
 ~/.claude-backups/backup-YYYYMMDD-HHMMSS/
 ```
 
-### Step 3: Backup All Three Locations
+### Step 3: Backup All Locations
 
 1. **Config file**:
    ```bash
@@ -31,6 +31,11 @@ Create a timestamped backup directory:
 3. **App registry**:
    ```bash
    cp -r "<app-registry-path>" ~/.claude-backups/backup-YYYYMMDD-HHMMSS/app-registry/
+   ```
+
+4. **App worktree registry** (if present — sits next to `claude-code-sessions/`):
+   ```bash
+   cp "<app-data-dir>/git-worktrees.json" ~/.claude-backups/backup-YYYYMMDD-HHMMSS/git-worktrees.json
    ```
 
 ### Step 4: Capture Metadata
@@ -64,7 +69,7 @@ For the `git_remotes` field, iterate over each project directory listed in `~/.c
 
 ### Step 5: Verify Backup
 
-1. Confirm all three directories were copied
+1. Confirm every location above was copied
 2. Compare file counts between source and backup
 3. Verify `manifest.json` is valid JSON
 

@@ -11,13 +11,15 @@ Run every check below and produce a detailed report. Do not ask for user input �
 - macOS: app registry at `~/Library/Application Support/Claude/claude-code-sessions/`
 - Linux: app registry at `~/.config/Claude/claude-code-sessions/`
 
+> **Path encoding is lossy.** Session dir names replace every non-alphanumeric character (`/`, spaces, dots, underscores) with `-`, so a dir name cannot be decoded back into a path. Instead, collect every known path (keys in `~/.claude.json` plus `cwd`/`worktreePath` values in the app registry), encode each with `re.sub(r'[^A-Za-z0-9]', '-', path)`, and match against the dir names. Dirs that match no known path are *unattributed*, not necessarily orphans — report them separately.
+
 ### Step 2: Orphan Detection
 
 **Orphan sessions** — session dirs in `~/.claude/projects/` pointing to non-existent project folders:
 1. List all path-encoded directories in `~/.claude/projects/`
-2. Decode each path (leading dash removed, remaining dashes → slashes)
-3. Check if the decoded directory exists on disk
-4. Flag any that don't exist as orphans
+2. Attribute each dir to a known path by encoding (see note above)
+3. For attributed dirs, check the path exists on disk; flag missing ones as orphans
+4. List unattributed dirs separately — never delete them automatically
 
 **Orphan config entries** — projects in `~/.claude.json` whose directories no longer exist:
 1. Read `~/.claude.json` and iterate over the `projects` keys
@@ -26,9 +28,13 @@ Run every check below and produce a detailed report. Do not ask for user input �
 
 **Orphan registry entries** — app registry entries pointing to non-existent directories:
 1. Find all `local_*.json` files in the app registry
-2. Extract `cwd` from each
-3. Check if each `cwd` exists on disk
+2. Extract `cwd` (and `worktreePath` if present) from each
+3. Check if each exists on disk
 4. Flag missing ones
+
+**Orphan worktree entries** — in the app's `git-worktrees.json` (next to `claude-code-sessions/`):
+1. For each entry under `worktrees`, check `path` and `baseRepo` exist
+2. Flag missing ones
 
 ### Step 3: Duplicate Detection
 
@@ -97,7 +103,8 @@ Date: YYYY-MM-DD HH:MM:SS
 
 --- Orphans ---
   Session dirs pointing to missing folders: X
-    - /decoded/path (session dir: -decoded-path)
+    - /known/path (session dir: -known-path)
+  Unattributed session dirs: X
   Config entries for missing folders: X
     - /missing/path
   Registry entries for missing folders: X

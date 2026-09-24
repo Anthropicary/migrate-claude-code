@@ -11,6 +11,8 @@ Run every check below and produce a summary report. Do not ask for user input â€
 - macOS: app registry at `~/Library/Application Support/Claude/claude-code-sessions/`
 - Linux: app registry at `~/.config/Claude/claude-code-sessions/`
 
+> **Path encoding is lossy.** Session dir names replace every non-alphanumeric character (`/`, spaces, dots, underscores) with `-`, so a dir name cannot be decoded back into a path. Instead, collect every known path (keys in `~/.claude.json` plus `cwd`/`worktreePath` values in the app registry), encode each with `re.sub(r'[^A-Za-z0-9]', '-', path)`, and match against the dir names. Dirs that match no known path are *unattributed*, not necessarily orphans â€” report them separately.
+
 ### Step 2: Check `~/.claude.json`
 
 1. Verify the file exists and is valid JSON (`python3 -m json.tool`)
@@ -23,9 +25,8 @@ Run every check below and produce a summary report. Do not ask for user input â€
 
 1. List all path-encoded project directories
 2. For each directory:
-   - Decode the path (dashes â†’ slashes)
-   - Check if the decoded path exists on disk
-   - Check if there's a matching entry in `~/.claude.json`
+   - Find the known path whose encoded form equals the dir name (see note above)
+   - If found, check that the path exists on disk; if none matches, mark it *unattributed*
    - Count `.jsonl` files and total size
 3. Flag directories with no matching config entry or no existing project folder
 
@@ -34,11 +35,18 @@ Run every check below and produce a summary report. Do not ask for user input â€
 1. Find all `local_*.json` files in the app registry
 2. For each file:
    - Verify it's valid JSON
-   - Extract the `cwd` field
-   - Check if the `cwd` directory exists on disk
+   - Extract `cwd`, `originCwd` and (if present) `worktreePath`
+   - Check that each of these directories exists on disk
    - Check if there's a matching entry in `~/.claude.json`
 3. Flag entries pointing to non-existent directories
 4. Flag duplicate entries (multiple `local_*.json` files with the same `cwd`)
+
+### Step 4b: Check `git-worktrees.json`
+
+If `git-worktrees.json` exists next to `claude-code-sessions/`:
+1. Verify it's valid JSON
+2. For each entry under `worktrees`, check that `path` and `baseRepo` exist on disk
+3. Flag entries whose paths are missing
 
 ### Step 5: Cross-Reference
 
