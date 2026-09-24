@@ -1,1 +1,12 @@
 migrate-claude-workspace/
+
+# Baseline: secrets and local junk
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+*.sqlite*
+*.db
+id_rsa*
+.DS_Store
